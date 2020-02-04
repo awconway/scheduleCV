@@ -23,6 +23,12 @@ jobs:
       
     - name: Install kableExtra
       run: Rscript -e 'install.packages("kableExtra")'
+
+    - name: Install curl
+      run: Rscript -e 'install.packages("curl")'
+      
+    - name: Install rcrossref
+      run: Rscript -e 'install.packages("rcrossref")'
       
     - name: render rmarkdown  
       run: Rscript -e 'rmarkdown::render("index.Rmd")'
