@@ -1,0 +1,17 @@
+Package: scheduleCV
+Title: Builds CV on schedule with data from orcid and 
+       google scholar
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "Aaron",
+           family = "Conway",
+           role = c("aut", "cre"),
+           email = "aaron.conway@utoronto.ca",
+           comment = c(ORCID = "0000-0002-9583-8636"))
+Description: Uses a github actions workflow to build
+       CV on schedule with data from orcid and 
+       google scholar
+URL: https://github.com/awconway/scheduleCV
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true

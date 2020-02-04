@@ -1,0 +1,488 @@
+---
+#runtime: shiny
+output: 
+  html_document:
+    css: styles.css
+    includes:
+      after_body: footer.html
+params:
+  orcid.id: "0000-0002-9583-8636"
+  years.since: 2010
+  spacer: ', '
+  journal.only: "No"
+  order: "dyear"
+  max.authors: 3
+  style: "APA"
+  bullets: 'numbers'
+  extra.order: 'None'
+  flag.OA: FALSE
+  bold.author: FALSE
+---
+
+<center>This CV has been updated on `r format(Sys.time(), "%a %b %d %X %Y")` using information from ORCID and Google Scholar</center>
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(shiny)
+library(scholar)
+library(kableExtra)
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+library(rorcid)
+x  <- "dc7ea3ae-38fd-4188-8bd1-1db4215ea139"
+Sys.setenv(ORCID_TOKEN=x, orcid_email="aaron.conway@utoronto.ca")
+```
+
+# Aaron Conway RN PhD
+
+----
+
+>  RBC Chair in Cardiovascular Nursing Research | Peter Munk Cardiac Centre<br>Assistant Professor | Lawrence S. Bloomberg Faculty of Nursing | University of Toronto<br>aaron.conway@utoronto.ca
+
+
+----
+
+  
+## Education
+
+```{r}
+edu <- rorcid::orcid_educations(params$orcid.id)
+edu <- edu$`0000-0002-9583-8636`$`affiliation-group`$summaries
+
+edu <- tibble(
+  organization = purrr::map_chr(edu, "education-summary.organization.name"),
+  title = purrr::map_chr(edu, "education-summary.role-title"),
+  start = purrr::map_chr(edu, "education-summary.start-date.year.value"),
+  end = purrr::map_chr(edu, "education-summary.end-date.year.value"),
+  city = purrr::map_chr(edu, "education-summary.organization.address.city"),
+  country = purrr::map_chr(edu, "education-summary.organization.address.country"))
+
+edu$time <- glue::glue("{edu$start} - {edu$end}")
+edu$location <- glue::glue("{edu$city}, {edu$country}") 
+edu %>% 
+  select(organization, title, time, location) %>% 
+kable(col.names = c("", "", "", ""))%>% 
+        column_spec(1, width = "18em") %>% 
+    column_spec(2, width = "18em") %>% 
+    kable_styling(bootstrap_options = "hover")
+```
+
+## Employment
+
+```{r}
+employ <- rorcid::orcid_employments(params$orcid.id)
+
+currentFunction <- function(x){
+  if(!is.null(employ$`0000-0002-9583-8636`$`affiliation-group`$summaries[[x]]$`employment-summary.end-date`)){
+     "Current"
+  } else {employ$`0000-0002-9583-8636`$`affiliation-group`$summaries[[x]]$`employment-summary.end-date.year.value`}
+}
+
+end_year <- vapply(seq(1, length(employ$`0000-0002-9583-8636`$`affiliation-group`$summaries), by = 1), currentFunction, "")
+
+employ <- employ$`0000-0002-9583-8636`$`affiliation-group`$summaries
+
+employ <- tibble(
+  organization = purrr::map_chr(employ, "employment-summary.organization.name"),
+  title = purrr::map_chr(employ, "employment-summary.role-title"),
+  start = purrr::map_chr(employ, "employment-summary.start-date.year.value"),
+  city = purrr::map_chr(employ, "employment-summary.organization.address.city"),
+  country = purrr::map_chr(employ, "employment-summary.organization.address.country"))
+
+employ$time <- glue::glue("{employ$start} - {end_year}")
+employ$location <- glue::glue("{employ$city}, {employ$country}") 
+
+employ %>% 
+  select(organization, title, time, location) %>% 
+kable(col.names = c("", "", "", ""))%>% 
+      column_spec(1, width = "18em") %>% 
+    column_spec(2, width = "18em") %>% 
+    kable_styling(bootstrap_options = "hover") 
+```
+
+<!-- orcid api version 3.0 change to rorcid function -->
+
+```{r}
+ocom <- function(l) Filter(Negate(is.null), l)
+ocom2 <- function(l) Filter(function(l) !is.null(l) && length(l) > 0, l)
+
+orcid_base <- function() "https://pub.orcid.org/v3.0_rc1"
+
+ojson <- "application/vnd.orcid+json; qs=4"
+
+orc_GET <- function(url, args = list(), ctype = ojson, ...) {
+  cli <- crul::HttpClient$new(
+    url = url,
+    opts = list(...),
+    headers = list(
+      Accept = ctype,
+      `User-Agent` = orcid_ua(),
+      'X-USER-AGENT' = orcid_ua(),
+      Authorization = orcid_auth()
+    )
+  )
+  res <- cli$get(query = args)
+  errs(res)
+  res$parse("UTF-8") 
+}
+
+check_key <- function() {
+  x <- Sys.getenv("ORCID_TOKEN", "")
+  if (x == "") {
+    x <- getOption("orcid_token", "")
+  }
+  if (x == "") NULL else x
+}
+
+orcid_ua <- function() {
+  versions <- c(
+    paste0("r-curl/", utils::packageVersion("curl")),
+    paste0("crul/", utils::packageVersion("crul")),
+    sprintf("rOpenSci(rorcid/%s)", utils::packageVersion("rorcid"))
+  )
+  paste0(versions, collapse = " ")
+}
+
+`%||%` <- function(x, y) {
+  if (is.null(x) || length(x) == 0) y else x
+}
+
+errs <- function(x) {
+  if (x$status_code > 201) {
+    xx <- jsonlite::fromJSON(x$parse("UTF-8"))
+    if (any(c("error-code", "errorCode") %in% names(xx))) {
+      # match by status code
+      fun <- fauxpas::find_error_class(x$status_code)$new()
+      fun$mssg <- xx$`developer-message` %||% xx$developerMessage
+      fun$do_verbose(x)
+    } else {
+      # if no error message in response, just general stop
+      fauxpas::http(x)
+    }
+  }
+}
+
+fuzzydoi <- function(x, fuzzy = FALSE) {
+  if (fuzzy) {
+    x
+  } else {
+    sprintf("digital-object-ids:\"%s\"", x)
+  }
+}
+
+orc_parse <- function(x){
+  out <- jsonlite::fromJSON(x, TRUE, flatten = TRUE)
+  df <- tibble::as_data_frame(out$result)
+  # names(df) <- gsub("orcid-profile\\.|orcid-profile\\.orcid-bio\\.", "", names(df))
+  attr(df, "found") <- out$`num-found`
+  return(df)
+}
+
+# From the plyr package
+failwith <- function(default = NULL, f, quiet = FALSE) {
+  f <- match.fun(f)
+  function(...) try_default(f(...), default, quiet = quiet)
+}
+
+# From the plyr package
+try_default <- function(expr, default, quiet = FALSE) {
+  result <- default
+  if (quiet) {
+    tryCatch(result <- expr, error = function(e) {
+    })
+  }
+  else {
+    try(result <- expr)
+  }
+  result
+}
+
+pluck <- function(x, name, type) {
+  if (missing(type)) {
+    lapply(x, "[[", name)
+  } else {
+    vapply(x, "[[", name, FUN.VALUE = type)
+  }
+}
+
+pop <- function(x, name) x[ !names(x) %in% name ]
+
+orcid_prof_helper <- function(x, path, ctype = ojson, ...) {
+  url2 <- file.path(orcid_base(), x, path)
+  out <- orc_GET(url2, ctype = ctype, ...)
+  switch_parser(ctype, out)
+}
+
+switch_parser <- function(ctype, x) {
+  switch(
+    ctype,
+    `application/vnd.orcid+xml; qs=5` = px(x), 
+    `application/orcid+xml; qs=3` = px(x), 
+    `application/xml` = px(x), 
+    `application/vnd.orcid+json; qs=4` = pj(x), 
+    `application/orcid+json; qs=2` = pj(x), 
+    `application/json` = pj(x), 
+    `application/vnd.citationstyles.csl+json` = pj(x),
+    stop("no parser found for ", ctype)
+  )
+}
+
+pj <- function(z) jsonlite::fromJSON(z, flatten = TRUE)
+px <- function(z) xml2::read_xml(z)
+
+orcid_putcode_helper <- function(path, orcid, put_code, format, ...) {
+  if (!is.null(put_code)) {
+    if (length(orcid) > 1) {
+      stop("if 'put_code' is given, 'orcid' must be length 1")
+    }
+  }
+  pth <- if (is.null(put_code)) path else file.path(path, put_code)
+  if (length(pth) > 1) {
+    stats::setNames(
+      Map(function(z) orcid_prof_helper(orcid, z, ctype = format), pth), 
+      put_code)
+  } else {
+    nmd <- if (!is.null(put_code)) put_code else orcid
+    stats::setNames(
+      lapply(orcid, orcid_prof_helper, path = pth, ctype = format, ...), nmd)
+  }
+}
+
+as_dt <- function(x, tibble = TRUE) {
+  z <- data.table::setDF(
+    data.table::rbindlist(x, use.names = TRUE, fill = TRUE)
+  )
+  if (tibble) z <- tibble::as_tibble(z)
+  return(z)
+}
+
+```
+
+## Awards
+
+```{r}
+distinctions  <- orcid_distinctions(params$orcid.id)
+distinctions <- distinctions$`0000-0002-9583-8636`$`affiliation-group`$summaries
+distinctions <- tibble(
+  organization = purrr::map_chr(distinctions, "distinction-summary.organization.name"),
+  title = purrr::map_chr(distinctions, "distinction-summary.role-title"),
+  time = purrr::map_chr(distinctions, "distinction-summary.start-date.year.value"))
+
+kable(distinctions,  col.names = c("", "", ""))%>% 
+    kable_styling(bootstrap_options = "hover") 
+```
+
+## Service
+
+```{r}
+service  <- orcid_services(params$orcid.id)
+
+currentFunction <- function(x){
+  if(!is.null(service$`0000-0002-9583-8636`$`affiliation-group`$summaries[[x]]$`service-summary.end-date`)){
+     "Current"
+  } else {service$`0000-0002-9583-8636`$`affiliation-group`$summaries[[x]]$`service-summary.end-date.year.value`}
+}
+
+end_year <- vapply(seq(1, length(service$`0000-0002-9583-8636`$`affiliation-group`$summaries), by = 1), currentFunction, "")
+
+
+service  <- service$`0000-0002-9583-8636`$`affiliation-group`$summaries
+service <- tibble(
+  organization = purrr::map_chr(service, "service-summary.organization.name"),
+  title = purrr::map_chr(service, "service-summary.role-title"),
+  start = purrr::map_chr(service, "service-summary.start-date.year.value"))
+
+service$time <- glue::glue("{service$start} - {end_year}") 
+
+service$time <- glue::glue("{service$start} - {end_year}") 
+service %>% 
+select(organization, title, time) %>% 
+kable(col.names = c("", "", "")) %>% 
+      column_spec(1, width = "25em") %>% 
+    column_spec(2, width = "20em") %>% 
+    kable_styling(bootstrap_options = "hover") 
+```
+
+## Memberships
+
+```{r}
+membership  <- orcid_memberships(params$orcid.id)
+
+currentFunction <- function(x){
+  if(!is.null(membership$`0000-0002-9583-8636`$`affiliation-group`$summaries[[x]]$`membership-summary.end-date`)){
+     "Current"
+  } else {membership$`0000-0002-9583-8636`$`affiliation-group`$summaries[[x]]$`membership-summary.end-date.year.value`}
+}
+
+end_year <- vapply(seq(1, length(membership$`0000-0002-9583-8636`$`affiliation-group`$summaries), by = 1), currentFunction, "")
+
+membership <- membership$`0000-0002-9583-8636`$`affiliation-group`$summaries 
+
+membership <- tibble(
+  organization = purrr::map_chr(membership, "membership-summary.organization.name"),
+  title = purrr::map_chr(membership, "membership-summary.role-title"),
+  start = purrr::map_chr(membership, "membership-summary.start-date.year.value"))
+
+membership$time <- glue::glue("{membership$start} - {end_year}")
+membership %>% 
+  select(organization, title, time)  %>% 
+kable( col.names = c("", "", "")) %>% 
+      column_spec(1, width = "25em") %>% 
+    column_spec(2, width = "20em") %>% 
+    kable_styling(bootstrap_options = "hover") 
+```
+
+
+## Funding
+
+
+```{r}
+funding <- rorcid::orcid_fundings(params$orcid.id)
+pcodes <- vapply(funding[[1]]$group$`funding-summary`, "[[", 1, "put-code")
+out <- lapply(pcodes, function(z) orcid_fundings(params$orcid.id, put_code=z))
+amount <- vapply(out, function(w) w[[1]]$amount$value, "")
+amount  <- paste("$", amount, sep = "")
+funding <- funding$`0000-0002-9583-8636`$group$`funding-summary` 
+funding <- tibble(
+  type = purrr::map_chr(funding, "type"),
+  funder = purrr::map_chr(funding, "organization.name"),
+  title = purrr::map_chr(funding, "title.title.value"),
+  start = purrr::map_chr(funding, "start-date.year.value"),
+  end = purrr::map_chr(funding, "end-date.year.value")) %>% 
+  mutate(timeframe = glue::glue("{start} - {end}")) %>% 
+  select(type, funder, title, timeframe) 
+funding$type <- stringr::str_replace_all(funding$type, "SALARY_AWARD", "SALARY AWARD")
+  funding <- funding %>% 
+  mutate(Amount = amount)
+kable(funding,  col.names = c("Type", "Funder", "Title", "Duration", "Amount")) %>%
+    column_spec(1, width = "5em") %>% 
+    column_spec(2, width = "12em") %>% 
+  column_spec(3, width = "20em") %>% 
+    kable_styling(bootstrap_options = "hover") 
+```
+
+## Publications
+```{r}
+id <- "2hpmnr8AAAAJ"
+
+## Get his profile
+l <- get_profile(id)
+```
+
+```{r}
+scholar <- scholar::get_publications(id) 
+scholar$journal <- recode(scholar$journal, "The Cochrane Library" = "Cochrane Database of Systematic Reviews")
+impact <- get_impactfactor(journals=scholar$journal, max.distance = 0.1)
+scholar$impact <- impact$ImpactFactor
+scholar$impact <- na_if(scholar$impact, "244.585")
+```
+
+```{r}
+papers <- get_num_articles(id)
+journals  <- get_num_distinct_journals(id)
+```
+<br>
+
+>Dr Conway's publication metrics indicate a rising trajectory in terms of the quality and quantity of academic papers he has published and the citation count of those papers. Aaron has published `r papers` articles in `r journals` distinct journals across multiple disciplines including nursing, anesthesia and cardiology. His publications have been cited `r l$total_cites` times, with a current H-index of `r l$h_index` and `r l$i10_index` publications have at least 10 citations. The plots below shows the number of publications and citations per year since he started an academic career.
+
+<br>
+```{r out.width=c('50%', '50%'), fig.show='hold'}
+scholar %>% 
+  group_by(year) %>% 
+  summarise(pubsperyear = n()) %>% 
+  mutate(total = cumsum(pubsperyear)) %>% 
+ggplot(aes(year, total)) +
+    geom_segment(aes(xend = year, yend = 0), size=1, color='darkgrey') +
+    geom_point(size=3, color="#3c8dbc") +
+    theme_classic() +
+    labs(x= "Year", y = "Publications") +
+  scale_x_continuous(breaks = 2010:max(scholar$year, na.rm = TRUE))
+
+ct <- get_citation_history(id)
+
+## Plot citation trend
+ggplot(ct, aes(year, cites)) +
+    geom_segment(aes(xend = year, yend = 0), size=1, color='darkgrey') +
+    geom_point(size=3, color="#3c8dbc") +
+    theme_classic() +
+    labs(x= "Year", y = "Citations")
+
+```
+
+
+<br><br>
+```{r }
+scholar%>% 
+  select(title, author, journal, year, cites, impact) %>%
+  kable(col.names = c("Title", "Authors", "Journal", "Year", "Total Citations", "Impact Factor")) %>%
+  kable_styling(bootstrap_options = "hover") %>% 
+  scroll_box(width = "auto%", height = "600px")
+```
+
+## Peer reviews
+```{r}
+reviews <- orcid_peer_reviews(params$orcid.id)
+reviews_issn <- reviews$`0000-0002-9583-8636`$group$`external-ids.external-id`
+
+get_title_from_issn <- function(issn) {
+  tryCatch(issn_title[[issn]], error = function(e) {rcrossref::cr_journals(issn)$data$title})
+}
+
+issnfunction <- function(x){
+  issn <- stringr::str_remove(reviews_issn[[x]]$`external-id-value`, "issn:")
+if(issn == "1532-8473") {
+  "Journal of Peri-Anesthesia Nursing"
+} else if(issn == "1651-2219"){
+  "Annals of Medicine"
+}  else if(issn == "1873-491X"){
+  "International Journal of Nursing Studies"
+}  else if(issn == "publons:Wiley"){
+  "Wiley journal not otherwise classified"
+  }   else if(issn == "1469-493X"){
+  "Cochrane Database of Systematic Reviews"
+  }   else if(issn == "1552-3799"){
+  "Clinical Nursing Research"
+  } else if(issn == "publons:Elsevier"){
+  "Elsevier journal not otherwise classified"
+  } else if(issn == "1557-3117"){
+  "Journal of Heart & Lung Transplantation"
+  }
+  else(get_title_from_issn(issn))
+}
+
+journalsReviewed <- vapply(seq(1,length(reviews_issn), by = 1), issnfunction, "")  
+  
+reviews_per_journal  <- reviews$`0000-0002-9583-8636`$group$`peer-review-group`
+
+
+
+numberReviewsFunction <- function(x){
+  nrow(reviews_per_journal[[x]])
+}
+
+numberReviewed <- purrr::map_dbl(seq(1,length(reviews_issn), by = 1), numberReviewsFunction)  
+reviewdf <- tibble(journalsReviewed, numberReviewed)
+reviewdf$journalsReviewed <- recode(reviewdf$journalsReviewed, "Collegian Journal of the Royal College of Nursing Australia" = "Collegian")
+totalreviews <- sum(reviewdf$numberReviewed)
+
+reviewdf <- tibble(journalsReviewed, numberReviewed)
+impact <- get_impactfactor(journals=reviewdf$journalsReviewed, max.distance = 0.1)
+reviewdf$impact <- impact$ImpactFactor
+reviewdf$impact <- na_if(reviewdf$impact, "244.585")
+reviewdf$journalsReviewed <- recode(reviewdf$journalsReviewed, "Collegian Journal of the Royal College of Nursing Australia" = "Collegian")
+
+totalreviews <- sum(reviewdf$numberReviewed)
+```
+<br>
+
+> Dr Conway has performed `r totalreviews` reviews since he commenced an acadmic career in 2013. He is also an Associate Editor for the journal Systematic Reviews.  
+
+<br>
+```{r}
+
+reviewdf %>% 
+  arrange(desc(numberReviewed)) %>% 
+  kable(col.names = c("Journal", "Number of reviews", "Impact Factor")) %>%
+  kable_styling(bootstrap_options = "hover") %>% 
+  scroll_box(width = "auto%", height = "600px")
+```
+
