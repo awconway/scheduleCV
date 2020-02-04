@@ -1,5 +1,4 @@
 ---
-#runtime: shiny
 output: 
   html_document:
     css: styles.css
@@ -7,16 +6,6 @@ output:
       after_body: footer.html
 params:
   orcid.id: "0000-0002-9583-8636"
-  years.since: 2010
-  spacer: ', '
-  journal.only: "No"
-  order: "dyear"
-  max.authors: 3
-  style: "APA"
-  bullets: 'numbers'
-  extra.order: 'None'
-  flag.OA: FALSE
-  bold.author: FALSE
 ---
 
 <center>This CV has been updated on `r format(Sys.time(), "%a %b %d %X %Y")` using information from ORCID and Google Scholar</center>
