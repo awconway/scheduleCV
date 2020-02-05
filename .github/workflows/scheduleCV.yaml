@@ -59,7 +59,7 @@ jobs:
            git checkout master
            git add .
            git status
-           git commit -am "Add new comment"
+           git commit -am "Scheduled"
            git push ${REMOTE} master
         
 
@@ -72,4 +72,4 @@ jobs:
         with:
            ACCESS_TOKEN: ${{ secrets.actions }} # https://github.com/settings/tokens
            BRANCH: master # The branch the action should deploy to.
-          FOLDER: . # The folder the action should deploy.
+           FOLDER: . # The folder the action should deploy.
