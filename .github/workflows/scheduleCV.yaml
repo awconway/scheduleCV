@@ -1,7 +1,7 @@
-on:
-   schedule:
+on: push
+#   schedule:
   #   # * is a special character in YAML so you have to quote this string
-     - cron:  '*/30 * * * *'
+  #   - cron:  '*/30 * * * *'
 
 name: render
 
@@ -61,15 +61,3 @@ jobs:
            git status
            git commit -am "Scheduled"
            git push ${REMOTE} master
-        
-
-      - name: Checkout
-        uses: actions/checkout@master
-
-
-      - name: Deploy to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@releases/v3
-        with:
-           ACCESS_TOKEN: ${{ secrets.actions }} # https://github.com/settings/tokens
-           BRANCH: master # The branch the action should deploy to.
-           FOLDER: . # The folder the action should deploy.
