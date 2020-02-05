@@ -1,7 +1,7 @@
-on:
-  schedule:
-    # * is a special character in YAML so you have to quote this string
-    - cron:  '*/20 * * * *'
+on: push
+  # schedule:
+  #   # * is a special character in YAML so you have to quote this string
+  #   - cron:  '*/20 * * * *'
 
 name: render
 
@@ -39,14 +39,21 @@ jobs:
         name: docs
         path: index.html
 
-    - name: Download artifact
-      uses: actions/download-artifact@v1
-      with: 
-        name: docs
+  checkout-and-deploy:
+    runs-on: ubuntu-latest
+    needs: render
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Download artifact
+        uses: actions/download-artifact@v1
+        with: 
+          name: docs
         
-    - name: Deploy to GitHub Pages
-      uses: JamesIves/github-pages-deploy-action@releases/v3
-      with: 
-        ACCESS_TOKEN: ${{ secrets.actions }} # https://github.com/settings/tokens
-        BRANCH: master # The branch the action should deploy to.
-        FOLDER: . # The folder the action should deploy.
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@releases/v3
+        with:
+          ACCESS_TOKEN: ${{ secrets.actions }} # https://github.com/settings/tokens
+          BRANCH: master # The branch the action should deploy to.
+          FOLDER: . # The folder the action should deploy.
+          BASE_BRANCH: master
