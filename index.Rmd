@@ -1,14 +1,12 @@
 ---
+hero-title: Aaron Conway BN (Hons) PhD
+hero-subtitle: |
+  RBC Chair in Cardiovascular Nursing Research | Peter Munk Cardiac   Centre<br>Assistant Professor | Lawrence S. Bloomberg Faculty of Nursing | University of Toronto<br>aaron.conway@utoronto.ca
 output: 
-  html_document:
-    css: styles.css
-    includes:
-      after_body: footer.html
+  myrmdtemplate::bloomberg:
 params:
   orcid.id: "0000-0002-9583-8636"
 ---
-
-<center>This CV has been updated on `r format(Sys.time(), "%a %b %d %X %Y")` using information from ORCID and Google Scholar</center>
 
 ```{r setup, include=FALSE}
 library(tidyverse)
@@ -21,17 +19,7 @@ x  <- "dc7ea3ae-38fd-4188-8bd1-1db4215ea139"
 Sys.setenv(ORCID_TOKEN=x, orcid_email="aaron.conway@utoronto.ca")
 ```
 
-# Aaron Conway RN PhD
-
-----
-
->  RBC Chair in Cardiovascular Nursing Research | Peter Munk Cardiac Centre<br>Assistant Professor | Lawrence S. Bloomberg Faculty of Nursing | University of Toronto<br>aaron.conway@utoronto.ca
-
-
-----
-
-  
-## Education
+# Education
 
 ```{r}
 edu <- rorcid::orcid_educations(params$orcid.id)
@@ -55,7 +43,7 @@ kable(col.names = c("", "", "", ""))%>%
     kable_styling(bootstrap_options = "hover")
 ```
 
-## Employment
+# Employment
 
 ```{r}
 employ <- rorcid::orcid_employments(params$orcid.id)
@@ -246,7 +234,7 @@ as_dt <- function(x, tibble = TRUE) {
 
 ```
 
-## Awards
+# Awards
 
 ```{r}
 distinctions  <- orcid_distinctions(params$orcid.id)
@@ -260,7 +248,7 @@ kable(distinctions,  col.names = c("", "", ""))%>%
     kable_styling(bootstrap_options = "hover") 
 ```
 
-## Service
+# Service
 
 ```{r}
 service  <- orcid_services(params$orcid.id)
@@ -291,7 +279,7 @@ kable(col.names = c("", "", "")) %>%
     kable_styling(bootstrap_options = "hover") 
 ```
 
-## Memberships
+# Memberships
 
 ```{r}
 membership  <- orcid_memberships(params$orcid.id)
@@ -321,7 +309,7 @@ kable( col.names = c("", "", "")) %>%
 ```
 
 
-## Funding
+# Funding
 
 
 ```{r}
@@ -349,7 +337,7 @@ kable(funding,  col.names = c("Type", "Funder", "Title", "Duration", "Amount")) 
     kable_styling(bootstrap_options = "hover") 
 ```
 
-## Publications
+# Publications
 ```{r}
 id <- "2hpmnr8AAAAJ"
 
@@ -372,6 +360,7 @@ journals  <- get_num_distinct_journals(id)
 <br>
 
 >Dr Conway's publication metrics indicate a rising trajectory in terms of the quality and quantity of academic papers he has published and the citation count of those papers. Aaron has published `r papers` articles in `r journals` distinct journals across multiple disciplines including nursing, anesthesia and cardiology. His publications have been cited `r l$total_cites` times, with a current H-index of `r l$h_index` and `r l$i10_index` publications have at least 10 citations. The plots below shows the number of publications and citations per year since he started an academic career.
+
 
 <br>
 ```{r out.width=c('50%', '50%'), fig.show='hold'}
@@ -407,7 +396,7 @@ scholar%>%
   scroll_box(width = "auto%", height = "600px")
 ```
 
-## Peer reviews
+# Peer reviews
 ```{r}
 reviews <- orcid_peer_reviews(params$orcid.id)
 reviews_issn <- reviews$`0000-0002-9583-8636`$group$`external-ids.external-id`
