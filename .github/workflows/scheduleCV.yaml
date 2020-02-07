@@ -1,7 +1,7 @@
 on:
  schedule:
      # * is a special character in YAML so you have to quote this string
-     - cron:  '20 19 * * *'
+     - cron:  '40 19 * * *'
 
 name: render
 
@@ -32,6 +32,9 @@ jobs:
 
     - name: Install myrmdtemplate
       run: Rscript -e 'devtools::install_github("awconway/myrmdtemplate")'
+      
+    - name: Install cvR
+      run: Rscript -e 'devtools::install_github("awconway/cvR")'
       
     - name: render rmarkdown  
       run: Rscript -e 'rmarkdown::render("index.Rmd")'
