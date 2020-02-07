@@ -15,7 +15,7 @@ params:
   bullets: 'numbers'
   extra.order: 'None'
   flag.OA: FALSE
-  bold.author: TRUE
+  bold.author: FALSE
 ---
 
 ```{r setup, include=FALSE}
@@ -264,6 +264,22 @@ papers  <-  my.filter(results, max.authors=params$max.authors, order=params$orde
 ## Journal articles
 ```{r list.papers, results='asis'}
 print_papers(papers)
+```
+
+
+# <i class="fas fa-computer-classic fa-fw"></i> Open Source Software
+
+```{r}
+software <- tribble(~package, ~description, ~year,
+                    "spiritR", "A workflow to enable direct upload of a clinical trial protocol to clinicaltrials.gov
+", 2019)
+
+glue::glue('<br>
+<ul style="list-style-type:none;">
+           <li>
+           <a href="https://spiritr.netlify.com><em>{software$package}</em></a><br>{software$description} <span style="float:right;">{software$year}</span>
+           </li>
+           </ul>')
 ```
 
 # <i class="fas fa-comments fa-fw"></i> Peer reviews
