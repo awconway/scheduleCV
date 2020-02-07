@@ -322,3 +322,9 @@ totalreviews <- sum(reviewdf$numberReviewed)
 > Dr Conway has performed `r totalreviews` reviews since he commenced an acadmic career in 2013. He is also an Associate Editor for the journal Systematic Reviews.  
 
 <br>
+&nbsp;
+<hr />
+<p style="text-align: center;">Created by <a href="https://www.aaronconway.info">Aaron Conway</a></p>
+<p style="text-align: center;"><span style="color: #808080;"><em>Updated on `r format(Sys.time(), "%a %b %d %X %Y")`</em></span></p>
+
+&nbsp;
