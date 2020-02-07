@@ -1,11 +1,21 @@
 ---
 hero-title: Aaron Conway BN (Hons) PhD
 hero-subtitle: |
-  RBC Chair in Cardiovascular Nursing Research | Peter Munk Cardiac   Centre<br>Assistant Professor | Lawrence S. Bloomberg Faculty of Nursing | University of Toronto<br>aaron.conway@utoronto.ca
+  RBC Chair in Cardiovascular Nursing Research | Peter Munk Cardiac   Centre<br>Assistant Professor | Lawrence S. Bloomberg Faculty of Nursing | University of Toronto
 output: 
   myrmdtemplate::bloomberg:
 params:
   orcid.id: "0000-0002-9583-8636"
+  years.since: 2010
+  spacer: ', '
+  journal.only: "Yes"
+  order: "dyear"
+  max.authors: 3
+  style: "APA"
+  bullets: 'numbers'
+  extra.order: 'None'
+  flag.OA: FALSE
+  bold.author: TRUE
 ---
 
 ```{r setup, include=FALSE}
@@ -13,7 +23,8 @@ library(tidyverse)
 library(shiny)
 library(scholar)
 library(kableExtra)
-knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+library(cvR)
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, results = 'asis')
 library(rorcid)
 x  <- "dc7ea3ae-38fd-4188-8bd1-1db4215ea139"
 Sys.setenv(ORCID_TOKEN=x, orcid_email="aaron.conway@utoronto.ca")
@@ -22,7 +33,7 @@ Sys.setenv(ORCID_TOKEN=x, orcid_email="aaron.conway@utoronto.ca")
 
 # <i class="fas fa-user-graduate fa-fw"></i> Education
 
-```{r}
+```{r  results='asis'}
 edu <- rorcid::orcid_educations(params$orcid.id)
 edu <- edu$`0000-0002-9583-8636`$`affiliation-group`$summaries
 
@@ -36,12 +47,12 @@ edu <- tibble(
 
 edu$time <- glue::glue("{edu$start} - {edu$end}")
 edu$location <- glue::glue("{edu$city}, {edu$country}") 
-edu %>% 
-  select(organization, title, time, location) %>% 
-kable(col.names = c("", "", "", ""))%>% 
-        column_spec(1, width = "18em") %>% 
-    column_spec(2, width = "18em") %>% 
-    kable_styling(bootstrap_options = "hover")
+glue::glue('<br>
+<ul style="list-style-type:none;">
+           <li>
+           <em>{edu$title}</em><br>{edu$organization}<br>{edu$location} <span style="float:right;">{edu$time}</span>
+           </li>
+           </ul>')
 ```
 
 
@@ -70,171 +81,16 @@ employ <- tibble(
 employ$time <- glue::glue("{employ$start} - {end_year}")
 employ$location <- glue::glue("{employ$city}, {employ$country}") 
 
-employ %>% 
-  select(organization, title, time, location) %>% 
-  kable(col.names = c("", "", "", ""))%>% 
-  column_spec(1, width = "18em") %>% 
-  column_spec(2, width = "18em") %>% 
-  kable_styling(bootstrap_options = "hover") 
-```
-
-<!-- orcid api version 3.0 change to rorcid function -->
-  
-  ```{r}
-ocom <- function(l) Filter(Negate(is.null), l)
-ocom2 <- function(l) Filter(function(l) !is.null(l) && length(l) > 0, l)
-
-orcid_base <- function() "https://pub.orcid.org/v3.0_rc1"
-
-ojson <- "application/vnd.orcid+json; qs=4"
-
-orc_GET <- function(url, args = list(), ctype = ojson, ...) {
-  cli <- crul::HttpClient$new(
-    url = url,
-    opts = list(...),
-    headers = list(
-      Accept = ctype,
-      `User-Agent` = orcid_ua(),
-      'X-USER-AGENT' = orcid_ua(),
-      Authorization = orcid_auth()
-    )
-  )
-  res <- cli$get(query = args)
-  errs(res)
-  res$parse("UTF-8") 
-}
-
-check_key <- function() {
-  x <- Sys.getenv("ORCID_TOKEN", "")
-  if (x == "") {
-    x <- getOption("orcid_token", "")
-  }
-  if (x == "") NULL else x
-}
-
-orcid_ua <- function() {
-  versions <- c(
-    paste0("r-curl/", utils::packageVersion("curl")),
-    paste0("crul/", utils::packageVersion("crul")),
-    sprintf("rOpenSci(rorcid/%s)", utils::packageVersion("rorcid"))
-  )
-  paste0(versions, collapse = " ")
-}
-
-`%||%` <- function(x, y) {
-  if (is.null(x) || length(x) == 0) y else x
-}
-
-errs <- function(x) {
-  if (x$status_code > 201) {
-    xx <- jsonlite::fromJSON(x$parse("UTF-8"))
-    if (any(c("error-code", "errorCode") %in% names(xx))) {
-      # match by status code
-      fun <- fauxpas::find_error_class(x$status_code)$new()
-      fun$mssg <- xx$`developer-message` %||% xx$developerMessage
-      fun$do_verbose(x)
-    } else {
-      # if no error message in response, just general stop
-      fauxpas::http(x)
-    }
-  }
-}
-
-fuzzydoi <- function(x, fuzzy = FALSE) {
-  if (fuzzy) {
-    x
-  } else {
-    sprintf("digital-object-ids:\"%s\"", x)
-  }
-}
-
-orc_parse <- function(x){
-  out <- jsonlite::fromJSON(x, TRUE, flatten = TRUE)
-  df <- tibble::as_data_frame(out$result)
-  # names(df) <- gsub("orcid-profile\\.|orcid-profile\\.orcid-bio\\.", "", names(df))
-  attr(df, "found") <- out$`num-found`
-  return(df)
-}
-
-# From the plyr package
-failwith <- function(default = NULL, f, quiet = FALSE) {
-  f <- match.fun(f)
-  function(...) try_default(f(...), default, quiet = quiet)
-}
-
-# From the plyr package
-try_default <- function(expr, default, quiet = FALSE) {
-  result <- default
-  if (quiet) {
-    tryCatch(result <- expr, error = function(e) {
-    })
-  }
-  else {
-    try(result <- expr)
-  }
-  result
-}
-
-pluck <- function(x, name, type) {
-  if (missing(type)) {
-    lapply(x, "[[", name)
-  } else {
-    vapply(x, "[[", name, FUN.VALUE = type)
-  }
-}
-
-pop <- function(x, name) x[ !names(x) %in% name ]
-
-orcid_prof_helper <- function(x, path, ctype = ojson, ...) {
-  url2 <- file.path(orcid_base(), x, path)
-  out <- orc_GET(url2, ctype = ctype, ...)
-  switch_parser(ctype, out)
-}
-
-switch_parser <- function(ctype, x) {
-  switch(
-    ctype,
-    `application/vnd.orcid+xml; qs=5` = px(x), 
-    `application/orcid+xml; qs=3` = px(x), 
-    `application/xml` = px(x), 
-    `application/vnd.orcid+json; qs=4` = pj(x), 
-    `application/orcid+json; qs=2` = pj(x), 
-    `application/json` = pj(x), 
-    `application/vnd.citationstyles.csl+json` = pj(x),
-    stop("no parser found for ", ctype)
-  )
-}
-
-pj <- function(z) jsonlite::fromJSON(z, flatten = TRUE)
-px <- function(z) xml2::read_xml(z)
-
-orcid_putcode_helper <- function(path, orcid, put_code, format, ...) {
-  if (!is.null(put_code)) {
-    if (length(orcid) > 1) {
-      stop("if 'put_code' is given, 'orcid' must be length 1")
-    }
-  }
-  pth <- if (is.null(put_code)) path else file.path(path, put_code)
-  if (length(pth) > 1) {
-    stats::setNames(
-      Map(function(z) orcid_prof_helper(orcid, z, ctype = format), pth), 
-      put_code)
-  } else {
-    nmd <- if (!is.null(put_code)) put_code else orcid
-    stats::setNames(
-      lapply(orcid, orcid_prof_helper, path = pth, ctype = format, ...), nmd)
-  }
-}
-
-as_dt <- function(x, tibble = TRUE) {
-  z <- data.table::setDF(
-    data.table::rbindlist(x, use.names = TRUE, fill = TRUE)
-  )
-  if (tibble) z <- tibble::as_tibble(z)
-  return(z)
-}
+glue::glue('<br>
+<ul style="list-style-type:none;">
+           <li>
+           <em>{employ$title}</em><br>{employ$organization}<br>{employ$location} <span style="float:right;">{employ$time}</span>
+           </li>
+           </ul>')
 
 ```
+
+
 
 # <i class="fas fa-file-certificate fa-fw"></i> Awards
 
@@ -246,9 +102,15 @@ distinctions <- tibble(
   title = purrr::map_chr(distinctions, "distinction-summary.role-title"),
   time = purrr::map_chr(distinctions, "distinction-summary.start-date.year.value"))
 
-kable(distinctions,  col.names = c("", "", ""))%>% 
-  kable_styling(bootstrap_options = "hover") 
+glue::glue('<br>
+<ul style="list-style-type:none;">
+           <li>
+           <em>{distinctions$title}</em><br>{distinctions$organization} <span style="float:right;">{distinctions$time}</span>
+           </li>
+           </ul>')
+
 ```
+
 
 # <i class="fas fa-users-class fa-fw"></i> Service
 
@@ -273,13 +135,14 @@ service <- tibble(
 service$time <- glue::glue("{service$start} - {end_year}") 
 
 service$time <- glue::glue("{service$start} - {end_year}") 
-service %>% 
-  select(organization, title, time) %>% 
-  kable(col.names = c("", "", "")) %>% 
-  column_spec(1, width = "25em") %>% 
-  column_spec(2, width = "20em") %>% 
-  kable_styling(bootstrap_options = "hover") 
+glue::glue('<br>
+<ul style="list-style-type:none;">
+           <li>
+           <em>{service$title}</em><br>{service$organization} <span style="float:right;">{service$time}</span>
+           </li>
+           </ul>')
 ```
+
 
 # <i class="fas fa-users fa-fw"></i> Memberships
 
@@ -302,14 +165,13 @@ membership <- tibble(
   start = purrr::map_chr(membership, "membership-summary.start-date.year.value"))
 
 membership$time <- glue::glue("{membership$start} - {end_year}")
-membership %>% 
-  select(organization, title, time)  %>% 
-  kable( col.names = c("", "", "")) %>% 
-  column_spec(1, width = "25em") %>% 
-  column_spec(2, width = "20em") %>% 
-  kable_styling(bootstrap_options = "hover") 
+glue::glue('<br>
+<ul style="list-style-type:none;">
+           <li>
+           <em>{membership$title}</em><br>{membership$organization} <span style="float:right;">{membership$time}</span>
+           </li>
+           </ul>')
 ```
-
 
 # <i class="fas fa-money-check-alt fa-fw"></i> Funding
 
@@ -332,11 +194,13 @@ funding <- tibble(
 funding$type <- stringr::str_replace_all(funding$type, "SALARY_AWARD", "SALARY AWARD")
 funding <- funding %>% 
   mutate(Amount = amount)
-kable(funding,  col.names = c("Type", "Funder", "Title", "Duration", "Amount")) %>%
-  column_spec(1, width = "5em") %>% 
-  column_spec(2, width = "12em") %>% 
-  column_spec(3, width = "20em") %>% 
-  kable_styling(bootstrap_options = "hover") 
+
+glue::glue('<br>
+<ul style="list-style-type:none;">
+           <li>
+           <em>{funding$title}</em><br>{funding$funder}<br>{funding$Amount} <span style="float:right;">{funding$timeframe}</span>
+           </li>
+           </ul>')
 ```
 
 # <i class="fas fa-book fa-fw"></i> Publications
@@ -350,9 +214,6 @@ l <- get_profile(id)
 ```{r}
 scholar <- scholar::get_publications(id) 
 scholar$journal <- recode(scholar$journal, "The Cochrane Library" = "Cochrane Database of Systematic Reviews")
-impact <- get_impactfactor(journals=scholar$journal, max.distance = 0.1)
-scholar$impact <- impact$ImpactFactor
-scholar$impact <- na_if(scholar$impact, "244.585")
 ```
 
 ```{r}
@@ -389,13 +250,20 @@ ggplot(ct, aes(year, cites)) +
 ```
 
 
-<br><br>
 ```{r }
-scholar%>% 
-  select(title, author, journal, year, cites, impact) %>%
-  kable(col.names = c("Title", "Authors", "Journal", "Year", "Total Citations", "Impact Factor")) %>%
-  kable_styling(bootstrap_options = "hover") %>% 
-  scroll_box(width = "auto%", height = "600px")
+results <- my.orcid(params$orcid.id) # single
+```
+
+
+```{r }
+papers  <-  my.filter(results, max.authors=params$max.authors, order=params$order,
+                   journal.only=params$journal.only, years.since=params$years.since,
+                   spacer=params$spacer, bold.author = params$bold.author)
+```
+
+## Journal articles
+```{r list.papers, results='asis'}
+print_papers(papers)
 ```
 
 # <i class="fas fa-comments fa-fw"></i> Peer reviews
@@ -445,9 +313,6 @@ reviewdf$journalsReviewed <- recode(reviewdf$journalsReviewed, "Collegian Journa
 totalreviews <- sum(reviewdf$numberReviewed)
 
 reviewdf <- tibble(journalsReviewed, numberReviewed)
-impact <- get_impactfactor(journals=reviewdf$journalsReviewed, max.distance = 0.1)
-reviewdf$impact <- impact$ImpactFactor
-reviewdf$impact <- na_if(reviewdf$impact, "244.585")
 reviewdf$journalsReviewed <- recode(reviewdf$journalsReviewed, "Collegian Journal of the Royal College of Nursing Australia" = "Collegian")
 
 totalreviews <- sum(reviewdf$numberReviewed)
@@ -457,12 +322,3 @@ totalreviews <- sum(reviewdf$numberReviewed)
 > Dr Conway has performed `r totalreviews` reviews since he commenced an acadmic career in 2013. He is also an Associate Editor for the journal Systematic Reviews.  
 
 <br>
-```{r}
-
-reviewdf %>% 
-  arrange(desc(numberReviewed)) %>% 
-  kable(col.names = c("Journal", "Number of reviews", "Impact Factor")) %>%
-  kable_styling(bootstrap_options = "hover") %>% 
-  scroll_box(width = "auto%", height = "600px")
-```
-

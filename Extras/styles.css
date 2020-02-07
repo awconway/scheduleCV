@@ -200,12 +200,17 @@ div.tocify {
   text-decoration: none !important;
 }
 
+a {
+    color: inherit;
+    border: none;
+    text-decoration: none !important;
+}
+
 a.button-landing-page {
     color: white !important;
     border: none;
     text-decoration: none !important;
 }
-
 
 a.button-landing-page:focus{
     z-index: 2;
