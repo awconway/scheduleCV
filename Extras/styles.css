@@ -12,7 +12,7 @@ body {
 }
 
 h1 {
-  color: DarkSlateGray;
+  color: #284260;
   padding-top: 2em !important;
   margin-top: -1em !important;
 }
@@ -117,28 +117,28 @@ div.tocify {
 
 .list-group-item:hover {
     z-index: 2;
-    color: DarkSlateGray;
+    color: #284260;
     background-color: white;
     border: none;
 }
 
 .list-group-item.active{
     z-index: 2;
-    color: darkslategray;
+    color: #284260;
     background-color: white;
     border: none;
 }
 
 .list-group-item.active:focus {
     z-index: 2;
-    color: darkslategray;
+    color: #284260;
     background-color: white;
     border: none;
 }
 
 .list-group-item.active:hover {
   z-index: 2;
-  color: DarkSlateGray;
+  color: #284260;
   background-color: white;
   border: none;
 }
@@ -196,7 +196,7 @@ div.tocify {
 
 .button:hover {
   background-color: white;
-  color: DarkSlateGray;
+  color: #284260;
   text-decoration: none !important;
 }
 
@@ -214,14 +214,14 @@ a.button-landing-page {
 
 a.button-landing-page:focus{
     z-index: 2;
-    color: DarkSlateGray;
+    color: #284260;
     border: none;
     text-decoration: none !important;
 }
 
 a.button-landing-page:hover{
     z-index: 2;
-    color: DarkSlateGray;
+    color: #284260;
     border: none;
     text-decoration: none !important;
 }
@@ -581,4 +581,16 @@ body, html {
 
 i {
   margin-right: 10px;
+}
+
+.box {
+     background-color: #284260;
+     border-left: solid 12px silver;
+     line-height: 18px;
+     padding: 4px;
+     font-size: 32px;
+     color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }

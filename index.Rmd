@@ -17,6 +17,27 @@ params:
   flag.OA: FALSE
   bold.author: FALSE
 ---
+---
+hero-title: Aaron Conway BN (Hons) PhD
+hero-subtitle: |
+  RBC Chair in Cardiovascular Nursing Research | Peter Munk Cardiac   Centre<br>Assistant Professor | Lawrence S. Bloomberg Faculty of Nursing | University of Toronto
+output: 
+  myrmdtemplate::bloomberg:
+params:
+  orcid.id: "0000-0002-9583-8636"
+  years.since: 2010
+  spacer: ', '
+  journal.only: "Yes"
+  order: "dyear"
+  max.authors: 3
+  style: "APA"
+  bullets: 'numbers'
+  extra.order: 'None'
+  flag.OA: FALSE
+  bold.author: FALSE
+---
+
+
 
 ```{r setup, include=FALSE}
 library(tidyverse)
@@ -220,32 +241,39 @@ scholar$journal <- recode(scholar$journal, "The Cochrane Library" = "Cochrane Da
 papers <- get_num_articles(id)
 journals  <- get_num_distinct_journals(id)
 ```
+
+<div class = "box">
+`r papers` articles
+</div>
 <br>
-  
-  >Dr Conway's publication metrics indicate a rising trajectory in terms of the quality and quantity of academic papers he has published and the citation count of those papers. Aaron has published `r papers` articles in `r journals` distinct journals across multiple disciplines including nursing, anesthesia and cardiology. His publications have been cited `r l$total_cites` times, with a current H-index of `r l$h_index` and `r l$i10_index` publications have at least 10 citations. The plots below shows the number of publications and citations per year since he started an academic career.
-
-
+<div class = "box">
+`r l$total_cites` citations
+</div>
+<br>
+<div class = "box">
+`r l$h_index` h-index
+</div>
 <br>
 ```{r out.width=c('50%', '50%'), fig.show='hold'}
 scholar %>% 
   group_by(year) %>% 
   summarise(pubsperyear = n()) %>% 
   mutate(total = cumsum(pubsperyear)) %>% 
-ggplot(aes(year, total)) +
-    geom_segment(aes(xend = year, yend = 0), size=1, color='darkgrey') +
-    geom_point(size=3, color="#3c8dbc") +
-    theme_classic() +
-    labs(x= "Year", y = "Publications") +
+  ggplot(aes(year, total)) +
+  geom_segment(aes(xend = year, yend = 0), size=1, color='darkgrey') +
+  geom_point(size=3, color="#284260") +
+  theme_classic() +
+  labs(x= "Year", y = "Publications") +
   scale_x_continuous(breaks = 2010:max(scholar$year, na.rm = TRUE))
 
 ct <- get_citation_history(id)
 
 ## Plot citation trend
 ggplot(ct, aes(year, cites)) +
-    geom_segment(aes(xend = year, yend = 0), size=1, color='darkgrey') +
-    geom_point(size=3, color="#3c8dbc") +
-    theme_classic() +
-    labs(x= "Year", y = "Citations")
+  geom_segment(aes(xend = year, yend = 0), size=1, color='darkgrey') +
+  geom_point(size=3, color="DarkSlateGray") +
+  theme_classic() +
+  labs(x= "Year", y = "Citations")
 
 ```
 
@@ -257,8 +285,8 @@ results <- my.orcid(params$orcid.id) # single
 
 ```{r }
 papers  <-  my.filter(results, max.authors=params$max.authors, order=params$order,
-                   journal.only=params$journal.only, years.since=params$years.since,
-                   spacer=params$spacer, bold.author = params$bold.author)
+                      journal.only=params$journal.only, years.since=params$years.since,
+                      spacer=params$spacer, bold.author = params$bold.author)
 ```
 
 ## Journal articles
@@ -275,11 +303,11 @@ software <- tribble(~package, ~description, ~year,
 ", 2019)
 
 glue::glue('<br>
-<ul style="list-style-type:none;">
-           <li>
-           <a href="https://spiritr.netlify.com"><em>{software$package}</em></a><br>{software$description} <span style="float:right;">{software$year}</span>
-           </li>
-           </ul>')
+  <ul style="list-style-type:none;">
+  <li>
+  <a href="https://spiritr.netlify.com"><em>{software$package}</em></a><br>{software$description} <span style="float:right;">{software$year}</span>
+  </li>
+  </ul>')
 ```
 
 # <i class="fas fa-comments fa-fw"></i> Peer reviews
@@ -293,28 +321,28 @@ get_title_from_issn <- function(issn) {
 
 issnfunction <- function(x){
   issn <- stringr::str_remove(reviews_issn[[x]]$`external-id-value`, "issn:")
-if(issn == "1532-8473") {
-  "Journal of Peri-Anesthesia Nursing"
-} else if(issn == "1651-2219"){
-  "Annals of Medicine"
-}  else if(issn == "1873-491X"){
-  "International Journal of Nursing Studies"
-}  else if(issn == "publons:Wiley"){
-  "Wiley journal not otherwise classified"
+  if(issn == "1532-8473") {
+    "Journal of Peri-Anesthesia Nursing"
+  } else if(issn == "1651-2219"){
+    "Annals of Medicine"
+  }  else if(issn == "1873-491X"){
+    "International Journal of Nursing Studies"
+  }  else if(issn == "publons:Wiley"){
+    "Wiley journal not otherwise classified"
   }   else if(issn == "1469-493X"){
-  "Cochrane Database of Systematic Reviews"
+    "Cochrane Database of Systematic Reviews"
   }   else if(issn == "1552-3799"){
-  "Clinical Nursing Research"
+    "Clinical Nursing Research"
   } else if(issn == "publons:Elsevier"){
-  "Elsevier journal not otherwise classified"
+    "Elsevier journal not otherwise classified"
   } else if(issn == "1557-3117"){
-  "Journal of Heart & Lung Transplantation"
+    "Journal of Heart & Lung Transplantation"
   }
   else(get_title_from_issn(issn))
 }
 
 journalsReviewed <- vapply(seq(1,length(reviews_issn), by = 1), issnfunction, "")  
-  
+
 reviews_per_journal  <- reviews$`0000-0002-9583-8636`$group$`peer-review-group`
 
 
@@ -334,13 +362,13 @@ reviewdf$journalsReviewed <- recode(reviewdf$journalsReviewed, "Collegian Journa
 totalreviews <- sum(reviewdf$numberReviewed)
 ```
 <br>
-
-> Dr Conway has performed `r totalreviews` reviews since he commenced an acadmic career in 2013. He is also an Associate Editor for the journal Systematic Reviews.  
+  
+  > Dr Conway has performed `r totalreviews` reviews since he commenced an acadmic career in 2013. He is also an Associate Editor for the journal Systematic Reviews.  
 
 <br>
-&nbsp;
+  &nbsp;
 <hr />
-<p style="text-align: center;">Created by <a href="https://www.aaronconway.info">Aaron Conway</a></p>
-<p style="text-align: center;"><span style="color: #808080;"><em>Updated on `r format(Sys.time(), "%a %b %d %X %Y")`</em></span></p>
-
-&nbsp;
+  <p style="text-align: center;">Created by <a href="https://www.aaronconway.info">Aaron Conway</a></p>
+  <p style="text-align: center;"><span style="color: #808080;"><em>Updated on `r format(Sys.time(), "%a %b %d %X %Y")`</em></span></p>
+  
+  &nbsp;
