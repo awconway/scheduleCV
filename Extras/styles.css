@@ -240,42 +240,42 @@ body, html {
   width: 100%;
 }
 
-.image-text{
-    position: absolute;
-    top:25%;
-    left:0;
-    right:0;
-    bottom:0;
-  }
+.parallax { 
+    background-color: #274260;
+    /* Set a specific height */
+    height: 400px; 
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    line-height: 2em;
+
+}
+
 .lil-image-text { 
     color: white;
-    margin-top: 0px;
-      margin-right: auto;
-      margin-bottom: 20px;
-      margin-left: a  uto;
-    padding-top: 0px;
-    text-align: center; 
-    display:block;
+    text-align: center;
     font-family: 'Lora', serif;
       font-size: 22px;
       font-weight: 500;
-      line-height: 1.5em;
+      line-height: 1em;
       letter-spacing: 1px;
       font-style: italic;
       font-weight: normal;
       color: #fff;
   }
+  
+
 
 .big-image-text { 
   font-family: et-book, Palatino, "Palatino Linotype", "Palatino LT STD", "Book Antiqua", Georgia, serif;
-  letter-spacing: 0.065em;
+  text-align: center;
   line-height: 1em;
   font-size: 40px;
-  text-align: center; 
-  display:block;
   color: #fff;
-  margin-bottom: 3rem;
 }
+
+
 /*@media screen and (max-width: 300px) {
  .image-descript {
   display: none;
@@ -555,18 +555,6 @@ body, html {
 }
 
 
-.parallax { 
-    /* The image used */
-    background-image: url("https://github.com/awconway/awconway.github.io/blob/master/images/hero.png?raw=true");
-    /* Set a specific height */
-    height: 450px; 
-
-    /* Create the parallax scrolling effect */
-    background-attachment: fixed;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
-}
 .myimg{
      top:5%;
     left:0;
