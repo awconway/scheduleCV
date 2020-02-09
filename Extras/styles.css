@@ -585,12 +585,18 @@ i {
 
 .box {
      background-color: #284260;
+     font-style: bold;
      border-left: solid 12px silver;
-     line-height: 18px;
      padding: 4px;
-     font-size: 32px;
+     font-size: 12px;
      color: white;
     display: flex;
     justify-content: center;
     align-items: center;
 }
+
+
+
+  [class*="col-"] {
+      margin-bottom: 15px;
+  }

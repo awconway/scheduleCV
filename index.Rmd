@@ -17,27 +17,6 @@ params:
   flag.OA: FALSE
   bold.author: FALSE
 ---
----
-hero-title: Aaron Conway BN (Hons) PhD
-hero-subtitle: |
-  RBC Chair in Cardiovascular Nursing Research | Peter Munk Cardiac   Centre<br>Assistant Professor | Lawrence S. Bloomberg Faculty of Nursing | University of Toronto
-output: 
-  myrmdtemplate::bloomberg:
-params:
-  orcid.id: "0000-0002-9583-8636"
-  years.since: 2010
-  spacer: ', '
-  journal.only: "Yes"
-  order: "dyear"
-  max.authors: 3
-  style: "APA"
-  bullets: 'numbers'
-  extra.order: 'None'
-  flag.OA: FALSE
-  bold.author: FALSE
----
-
-
 
 ```{r setup, include=FALSE}
 library(tidyverse)
@@ -45,6 +24,7 @@ library(shiny)
 library(scholar)
 library(kableExtra)
 library(cvR)
+library(plotly)
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, results = 'asis')
 library(rorcid)
 x  <- "dc7ea3ae-38fd-4188-8bd1-1db4215ea139"
@@ -242,41 +222,68 @@ papers <- get_num_articles(id)
 journals  <- get_num_distinct_journals(id)
 ```
 
-<div class = "box">
-`r papers` articles
-</div>
 <br>
+<div class="row">
+<div class="col-md-4">
 <div class = "box">
-`r l$total_cites` citations
+<span style="font-size: 32px;">
+`r papers`<br>
+</span>
+articles
 </div>
-<br>
+</div>
+<div class="col-md-4">
 <div class = "box">
-`r l$h_index` h-index
+<span style="font-size: 32px;">
+`r l$total_cites`<br>
+</span>
+citations
 </div>
+</div>
+<div class="col-md-4">
+<div class = "box">
+<span style="font-size: 32px;">
+`r l$h_index`<br>
+</span>
+h-index
+</div>
+</div>
+</div>
+
 <br>
-```{r out.width=c('50%', '50%'), fig.show='hold'}
-scholar %>% 
+<div class="row">
+<div class="col-md-6">
+```{r pubs, out.width="90%"}
+pubs_plot <- scholar %>% 
   group_by(year) %>% 
   summarise(pubsperyear = n()) %>% 
   mutate(total = cumsum(pubsperyear)) %>% 
   ggplot(aes(year, total)) +
-  geom_segment(aes(xend = year, yend = 0), size=1, color='darkgrey') +
+  geom_line(size=1, color='darkgrey') +
   geom_point(size=3, color="#284260") +
   theme_classic() +
   labs(x= "Year", y = "Publications") +
-  scale_x_continuous(breaks = 2010:max(scholar$year, na.rm = TRUE))
-
+  scale_x_continuous(breaks = seq(2010, max(scholar$year, na.rm = TRUE), by=2))+
+  theme(axis.title  =element_text(face = "bold", size=16))
+ggplotly(pubs_plot)
+```
+</div>
+<div class="col-md-6">
+```{r cites, out.width="90%"}
 ct <- get_citation_history(id)
 
 ## Plot citation trend
-ggplot(ct, aes(year, cites)) +
+citations_plot <- ggplot(ct, aes(year, cites)) +
   geom_segment(aes(xend = year, yend = 0), size=1, color='darkgrey') +
   geom_point(size=3, color="DarkSlateGray") +
   theme_classic() +
-  labs(x= "Year", y = "Citations")
+  labs(x= "Year", y = "Citations")+
+    theme(axis.title  =element_text(face = "bold", size=16))
+ggplotly(citations_plot)
 
 ```
-
+</div>
+</div>
 
 ```{r }
 results <- my.orcid(params$orcid.id) # single
@@ -295,7 +302,7 @@ print_papers(papers)
 ```
 
 
-# <i class="fas fa-computer-classic fa-fw"></i> Open Source Software
+# <i class="fas fa-computer-classic fa-fw"></i> Software
 
 ```{r}
 software <- tribble(~package, ~description, ~year,
