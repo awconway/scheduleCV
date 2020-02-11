@@ -69,13 +69,3 @@ jobs:
            git status
            git commit -am "Scheduled"
            git push ${REMOTE} master
-        
-  build:
-      name: netlify
-      needs: [render, checkout-and-deploy]
-      runs-on: ubuntu-latest
-      steps:
-      - name: Trigger our build webhook on Netlify
-        run: curl -s -X POST "https://api.netlify.com/build_hooks/${netlify_build_token}"
-        env:
-          TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
