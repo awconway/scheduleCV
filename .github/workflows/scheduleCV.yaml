@@ -9,8 +9,6 @@ jobs:
   render:
     runs-on: ubuntu-latest
     container: rocker/verse
-    env:
-      ORCID_TOKEN: ${{ secrets.ORCID_TOKEN }}
     steps:
     - name: Checkout
       uses: actions/checkout@v2 # If you're using actions/checkout@v2 you must set persist-credentials to false in most cases for the deployment to work correctly.
@@ -42,6 +40,8 @@ jobs:
       run: Rscript -e 'devtools::install_github("awconway/cvR")'
       
     - name: render rmarkdown  
+      env:
+        ORCID_TOKEN: ${{ secrets.ORCID_TOKEN }}
       run: Rscript -e 'rmarkdown::render("index.Rmd")'
       
     - name: Upload results
