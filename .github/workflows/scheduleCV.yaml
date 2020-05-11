@@ -7,8 +7,7 @@ name: render
 
 jobs:
   render:
-  #not docker server
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     container: rocker/verse
     steps:
     - name: Checkout
@@ -50,7 +49,7 @@ jobs:
         path: index.html
 
   checkout-and-deploy:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     needs: render
     steps:
       - name: Checkout
