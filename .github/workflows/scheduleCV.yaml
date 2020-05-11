@@ -49,7 +49,7 @@ jobs:
         path: index.html
 
   checkout-and-deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: render
     steps:
       - name: Checkout
