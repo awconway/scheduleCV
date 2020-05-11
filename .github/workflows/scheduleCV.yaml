@@ -9,6 +9,8 @@ jobs:
   render:
     runs-on: ubuntu-latest
     container: rocker/verse
+    env:
+      ORCID_TOKEN: ${{ secrets.ORCID_TOKEN }}
     steps:
     - name: Checkout
       uses: actions/checkout@v2 # If you're using actions/checkout@v2 you must set persist-credentials to false in most cases for the deployment to work correctly.
