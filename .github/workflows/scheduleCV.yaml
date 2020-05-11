@@ -7,6 +7,7 @@ name: render
 
 jobs:
   render:
+  #not docker server
     runs-on: self-hosted
     container: rocker/verse
     steps:
