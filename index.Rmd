@@ -3,9 +3,11 @@ hero-title: Aaron Conway BN (Hons) PhD
 hero-subtitle: |
   RBC Chair in Cardiovascular Nursing Research | Peter Munk Cardiac   Centre<br>Assistant Professor | Lawrence S. Bloomberg Faculty of Nursing | University of Toronto
 output: 
-  myrmdtemplate::bloomberg:
+  html_document:
+    template: Extras/template.html
     toc: true
     toc_float: true
+css: Extras/styles.css
 params:
   orcid.id: "0000-0002-9583-8636"
   years.since: 2010
@@ -18,8 +20,6 @@ params:
   extra.order: 'None'
   flag.OA: FALSE
   bold.author: FALSE
-editor_options: 
-  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -287,7 +287,7 @@ ggplotly(citations_plot)
 </div>
 </div>
 
-```{r }
+```{r include=FALSE}
 results <- my.orcid(params$orcid.id) # single
 ```
 
