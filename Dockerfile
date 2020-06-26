@@ -6,7 +6,7 @@ RUN install2.r --error \
     kableExtra \
     curl \
     rcrossref \
-    plotly \
+    plotly
 
 RUN installGithub.r \
     awconway/myrmdtemplate \
