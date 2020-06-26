@@ -1,43 +1,19 @@
-on: push
- #schedule:
-     # * is a special character in YAML so you have to quote this string
-  #   - cron:  '0 14 * * *'
+on: 
+ schedule:
+    #  * is a special character in YAML so you have to quote this string
+    - cron:  '0 14 * * *'
 
 name: render
 
 jobs:
   render:
     runs-on: ubuntu-latest
-    container: rocker/verse
+    container: awconway/schedulecv
     steps:
     - name: Checkout
       uses: actions/checkout@v2 # If you're using actions/checkout@v2 you must set persist-credentials to false in most cases for the deployment to work correctly.
       with:
         persist-credentials: false
-    
-    - name: Install scholar
-      run: Rscript -e 'install.packages("scholar")'
-      
-    - name: Install rorcid
-      run: Rscript -e 'install.packages("rorcid")'
-      
-    - name: Install kableExtra
-      run: Rscript -e 'install.packages("kableExtra")'
-
-    - name: Install curl
-      run: Rscript -e 'install.packages("curl")'
-      
-    - name: Install rcrossref
-      run: Rscript -e 'install.packages("rcrossref")'
-      
-    - name: Install plotly
-      run: Rscript -e 'install.packages("plotly")'
-
-    - name: Install myrmdtemplate
-      run: Rscript -e 'devtools::install_github("awconway/myrmdtemplate")'
-      
-    - name: Install cvR
-      run: Rscript -e 'devtools::install_github("awconway/cvR")'
       
     - name: render rmarkdown  
       env:
