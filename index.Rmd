@@ -328,6 +328,14 @@ get_title_from_issn <- function(issn) {
   tryCatch(issn_title[[issn]], error = function(e) {rcrossref::cr_journals(issn)$data$title})
 }
 
+# when errors: 
+#Error in vapply(seq(1, length(reviews_issn), by = 1), issnfunction, "") : 
+#  values must be length 1,
+# but FUN(X[[29]]) result is length 0
+
+# run stringr::str_remove(reviews_issn[[29]]$`external-id-value`, "issn:")
+# subbing in the number from the error FUN(X[[29]]) then find out what journal the issn is for and add the else if statement
+
 issnfunction <- function(x){
   issn <- stringr::str_remove(reviews_issn[[x]]$`external-id-value`, "issn:")
   if(issn == "1532-8473") {
@@ -346,11 +354,25 @@ issnfunction <- function(x){
     "Elsevier journal not otherwise classified"
   } else if(issn == "1557-3117"){
     "Journal of Heart & Lung Transplantation"
+  } else if(issn == "1527-3288"){
+    "Heart, Lung & Circulation"
+  } else if(issn == "1878-5921"){
+    "Journal of Clinical Epidemiology"
+  } else if(issn == "1878-1721"){
+    "Australian Critical Care"
+  } else if(issn == "1876-7575"){
+    "Collegian"
+  } else if(issn == "1873-4529"){
+    "Journal of Clinical Anesthesia"
+  } else if(issn == "1938-131X"){
+    "Joint Commission Journal on Quality & Patient Safety"
   }
   else(get_title_from_issn(issn))
 }
 
-journalsReviewed <- vapply(seq(1,length(reviews_issn), by = 1), issnfunction, "")  
+journalsReviewed <- vapply(seq(1,
+                               length(reviews_issn),
+                               by = 1), issnfunction, "")  
 
 reviews_per_journal  <- reviews$`0000-0002-9583-8636`$group$`peer-review-group`
 
@@ -362,7 +384,7 @@ numberReviewsFunction <- function(x){
 
 numberReviewed <- purrr::map_dbl(seq(1,length(reviews_issn), by = 1), numberReviewsFunction)  
 reviewdf <- tibble(journalsReviewed, numberReviewed)
-reviewdf$journalsReviewed <- recode(reviewdf$journalsReviewed, "Collegian Journal of the Royal College of Nursing Australia" = "Collegian")
+# reviewdf$journalsReviewed <- recode(reviewdf$journalsReviewed, "Collegian Journal of the Royal College of Nursing Australia" = "Collegian")
 totalreviews <- sum(reviewdf$numberReviewed)
 
 reviewdf <- tibble(journalsReviewed, numberReviewed)
