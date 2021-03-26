@@ -588,3 +588,7 @@ i {
   [class*="col-"] {
       margin-bottom: 15px;
   }
+
+table {
+    line-height: 1.4;
+  }
