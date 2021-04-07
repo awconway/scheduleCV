@@ -10,4 +10,5 @@ RUN install2.r --error \
 
 RUN installGithub.r \
     awconway/myrmdtemplate \
-    awconway/cvR
+    awconway/cvR \
+    rstudio/pagedown

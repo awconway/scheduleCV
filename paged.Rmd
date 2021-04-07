@@ -2,18 +2,11 @@
 hero-title: Aaron Conway BN (Hons) PhD
 hero-subtitle: |
   RBC Chair in Cardiovascular Nursing Research | Peter Munk Cardiac   Centre<br>Assistant Professor | Lawrence S. Bloomberg Faculty of Nursing | University of Toronto
-# output: 
-#   html_document:
-#     template: Extras/template.html
-#     toc: true
-#     toc_float: true
 output:
   pagedown::html_paged:
     css: 
       - Extras/paged.css
-      - "https://use.fontawesome.com/releases/v5.7.2/css/all.css"
     number_sections: false  
-css: Extras/styles.css
 params:
   orcid.id: "0000-0002-9583-8636"
   years.since: 2010
@@ -31,16 +24,29 @@ params:
 ```{r setup, include=FALSE}
 library(tidyverse)
 library(scholar)
-library(kableExtra)
 library(cvR)
-library(plotly)
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, results = 'asis')
 library(rorcid)
 Sys.getenv("ORCID_TOKEN")
 ```
 
 
-# <i class="fas fa-user-graduate fa-fw"></i> Education
+:::::: {.title-and-contact}
+
+::: {.title}
+<h1 class="title">Aaron Conway</h1>
+:::
+
+::: {.contact-info}
+<img src="Extras/bloomberg.png" height="80px" />
+:::
+
+::::::
+
+<div class="cv-entries">
+
+
+# Education
 
 ```{r  results='asis'}
 edu <- rorcid::orcid_educations(params$orcid.id)
@@ -59,13 +65,13 @@ edu$location <- glue::glue("{edu$city}, {edu$country}")
 glue::glue('<br>
 <ul style="list-style-type:none;">
            <li>
-           <em>{edu$title}</em><br>{edu$organization}<br>{edu$location} <span style="float:right;">{edu$time}</span>
+           <em>{edu$title}</em><br>{edu$organization}<br>{edu$location} <span style="float:right;color:#929598;">{edu$time}</span>
            </li>
            </ul>')
 ```
 
 
-# <i class="fas fa-briefcase fa-fw"></i> Employment
+# Employment
 
 ```{r}
 employ <- rorcid::orcid_employments(params$orcid.id)
@@ -93,7 +99,7 @@ employ$location <- glue::glue("{employ$city}, {employ$country}")
 glue::glue('<br>
 <ul style="list-style-type:none;">
            <li>
-           <em>{employ$title}</em><br>{employ$organization}<br>{employ$location} <span style="float:right;">{employ$time}</span>
+           <em>{employ$title}</em><br>{employ$organization}<br>{employ$location} <span style="float:right;color:#929598;">{employ$time}</span>
            </li>
            </ul>')
 
@@ -101,7 +107,7 @@ glue::glue('<br>
 
 
 
-# <i class="fas fa-file-certificate fa-fw"></i> Awards
+# Awards
 
 ```{r}
 distinctions  <- orcid_distinctions(params$orcid.id)
@@ -114,14 +120,14 @@ distinctions <- tibble(
 glue::glue('<br>
 <ul style="list-style-type:none;">
            <li>
-           <em>{distinctions$title}</em><br>{distinctions$organization} <span style="float:right;">{distinctions$time}</span>
+           <em>{distinctions$title}</em><br>{distinctions$organization} <span style="float:right;color:#929598;">{distinctions$time}</span>
            </li>
            </ul>')
 
 ```
 
 
-# <i class="fas fa-users-class fa-fw"></i> Service
+# Service
 
 ```{r}
 service  <- orcid_services(params$orcid.id)
@@ -147,13 +153,13 @@ service$time <- glue::glue("{service$start} - {end_year}")
 glue::glue('<br>
 <ul style="list-style-type:none;">
            <li>
-           <em>{service$title}</em><br>{service$organization} <span style="float:right;">{service$time}</span>
+           <em>{service$title}</em><br>{service$organization} <span style="float:right;color:#929598;">{service$time}</span>
            </li>
            </ul>')
 ```
 
 
-# <i class="fas fa-users fa-fw"></i> Memberships
+# Memberships
 
 ```{r}
 membership  <- orcid_memberships(params$orcid.id)
@@ -177,15 +183,16 @@ membership$time <- glue::glue("{membership$start} - {end_year}")
 glue::glue('<br>
 <ul style="list-style-type:none;">
            <li>
-           <em>{membership$title}</em><br>{membership$organization} <span style="float:right;">{membership$time}</span>
+           <em>{membership$title}</em><br>{membership$organization} <span style="float:right;color:#929598;">{membership$time}</span>
            </li>
            </ul>')
 ```
 
-# <i class="fas fa-money-check-alt fa-fw"></i> Funding
+# Funding
 
 
 ```{r}
+options(digits=0)
 funding <- rorcid::orcid_fundings(params$orcid.id)
 pcodes <- vapply(funding[[1]]$group$`funding-summary`, "[[", 1, "put-code")
 out <- lapply(pcodes, function(z) orcid_fundings(params$orcid.id, put_code=z))
@@ -199,99 +206,23 @@ funding <- tibble(
   start = purrr::map_chr(funding, "start-date.year.value"),
   end = purrr::map_chr(funding, "end-date.year.value")) %>% 
   mutate(timeframe = glue::glue("{start} - {end}")) %>% 
-  select(type, funder, title, timeframe) 
+  select(type, funder, title, timeframe, end) 
 funding$type <- stringr::str_replace_all(funding$type, "SALARY_AWARD", "SALARY AWARD")
 funding <- funding %>% 
-  mutate(Amount = amount)
+  mutate(Amount = amount) %>%
+  arrange(desc(as.numeric(end)))
 
 glue::glue('<br>
 <ul style="list-style-type:none;">
            <li>
-           <em>{funding$title}</em><br>{funding$funder}<br>{funding$Amount} <span style="float:right;">{funding$timeframe}</span>
+           <em>{funding$title}</em><br>{funding$funder}<br>{funding$Amount} <span style="float:right;color:#929598;">{funding$timeframe}</span>
            </li>
            </ul>')
 ```
 
-# <i class="fas fa-book fa-fw"></i> Publications
-```{r}
-id <- "2hpmnr8AAAAJ"
 
-## Get his profile
-l <- get_profile(id)
-```
 
-```{r}
-scholar <- scholar::get_publications(id) 
-scholar$journal <- recode(scholar$journal, "The Cochrane Library" = "Cochrane Database of Systematic Reviews")
-```
-
-```{r}
-papers <- get_num_articles(id)
-journals  <- get_num_distinct_journals(id)
-```
-
-<br>
-<div class="row">
-<div class="col-md-4">
-<div class = "box">
-<span style="font-size: 32px;">
-`r papers`<br>
-</span>
-articles
-</div>
-</div>
-<div class="col-md-4">
-<div class = "box">
-<span style="font-size: 32px;">
-`r l$total_cites`<br>
-</span>
-citations
-</div>
-</div>
-<div class="col-md-4">
-<div class = "box">
-<span style="font-size: 32px;">
-`r l$h_index`<br>
-</span>
-h-index
-</div>
-</div>
-</div>
-
-<br>
-<div class="row">
-<div class="col-md-6">
-```{r pubs, out.width="90%"}
-pubs_plot <- scholar %>% 
-  group_by(year) %>% 
-  summarise(pubsperyear = n()) %>% 
-  mutate(total = cumsum(pubsperyear)) %>% 
-  ggplot(aes(year, total)) +
-  geom_line(size=1, color='darkgrey') +
-  geom_point(size=3, color="#284260") +
-  theme_classic() +
-  labs(x= "Year", y = "Publications") +
-  scale_x_continuous(breaks = seq(2010, max(scholar$year, na.rm = TRUE), by=2))+
-  theme(axis.title  =element_text(face = "bold", size=16))
-ggplotly(pubs_plot)
-```
-</div>
-<div class="col-md-6">
-```{r cites, out.width="90%"}
-ct <- get_citation_history(id)
-
-## Plot citation trend
-citations_plot <- ggplot(ct, aes(year, cites)) +
-  geom_segment(aes(xend = year, yend = 0), size=1, color='darkgrey') +
-  geom_point(size=3, color="DarkSlateGray") +
-  theme_classic() +
-  labs(x= "Year", y = "Citations")+
-    theme(axis.title  =element_text(face = "bold", size=16))
-ggplotly(citations_plot)
-
-```
-</div>
-</div>
+# Publications
 
 ```{r include=FALSE}
 results <- my.orcid(params$orcid.id) # single
@@ -309,8 +240,13 @@ papers  <-  my.filter(results, max.authors=params$max.authors, order=params$orde
 print_papers(papers)
 ```
 
+## Book Chapters
 
-# <i class="fas fa-computer-classic fa-fw"></i> Software
+1. Conway A & Duff K. Common quantitative methods. *Nursing and Midwifery Research: Methods and Appraisal for Evidence Based Practice.[6th ed.]* (2020).
+
+<br class=pageBreak />
+
+# Software
 
 ```{r}
 software <- tribble(~package, ~description, ~year,
@@ -320,12 +256,12 @@ software <- tribble(~package, ~description, ~year,
 glue::glue('<br>
   <ul style="list-style-type:none;">
   <li>
-  <a href="https://spiritr.netlify.com"><em>{software$package}</em></a><br>{software$description} <span style="float:right;">{software$year}</span>
+  <a href="https://spiritr.netlify.com"><em>{software$package}</em></a><br>{software$description} <span style="float:right;color:#929598;">{software$year}</span>
   </li>
   </ul>')
 ```
 
-# <i class="fas fa-comments fa-fw"></i> Peer reviews
+# Peer reviews
 ```{r}
 reviews <- orcid_peer_reviews(params$orcid.id)
 reviews_issn <- reviews$`0000-0002-9583-8636`$group$`external-ids.external-id`
@@ -397,15 +333,18 @@ reviewdf <- tibble(journalsReviewed, numberReviewed)
 reviewdf$journalsReviewed <- recode(reviewdf$journalsReviewed, "Collegian Journal of the Royal College of Nursing Australia" = "Collegian")
 
 totalreviews <- sum(reviewdf$numberReviewed)
-```
-<br>
-  
-  > Dr Conway has performed `r totalreviews` reviews since he commenced an acadmic career in 2013. He is also an Associate Editor for the journal Systematic Reviews.  
 
-<br>
-  &nbsp;
-<hr />
-  <p style="text-align: center;">Created by <a href="https://www.aaronconway.info">Aaron Conway</a></p>
-  <p style="text-align: center;"><span style="color: #808080;"><em>Updated on `r format(Sys.time(), "%a %b %d %X %Y")`</em></span></p>
-  
-  &nbsp;
+reviewdf <- reviewdf %>% 
+  arrange(desc(numberReviewed))
+
+glue::glue('<br>
+<ul style="list-style-type:none;">
+           <li>
+           <em>{reviewdf$journalsReviewed}</em><span style="float:right;color:#929598;">{reviewdf$numberReviewed}</span>
+           </li>
+           </ul>')
+```
+
+
+
+</div>
