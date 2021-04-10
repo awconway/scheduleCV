@@ -2,17 +2,11 @@
 hero-title: Aaron Conway BN (Hons) PhD
 hero-subtitle: |
   RBC Chair in Cardiovascular Nursing Research | Peter Munk Cardiac   Centre<br>Assistant Professor | Lawrence S. Bloomberg Faculty of Nursing | University of Toronto
-# output: 
-#   html_document:
-#     template: Extras/template.html
-#     toc: true
-#     toc_float: true
-output:
-  pagedown::html_paged:
-    css: 
-      - Extras/paged.css
-      - "https://use.fontawesome.com/releases/v5.7.2/css/all.css"
-    number_sections: false  
+output: 
+  html_document:
+    template: Extras/template.html
+    toc: true
+    toc_float: true
 css: Extras/styles.css
 params:
   orcid.id: "0000-0002-9583-8636"
